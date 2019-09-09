@@ -1,120 +1,116 @@
 var express = require('express');
-var bcrypt = require('bcryptjs');
+
 
 var mdAutenticacion = require('../middlewares/autenticacion');
 
 var app = express();
 
-var Usuario = require('../models/usuario');
+var Estacion = require('../models/estacion');
 
 //===========================================================
-//Devolvemos un listado de usuarios, sin el campo password
+//Devolvemos un listado de estaciones, sin el campo password
 //===========================================================
 app.get('/', (req, res, next) => {
 
-    Usuario.find({}, 'nombre email img role')
+    Estacion.find({})
+        .populate('usuario', 'nombre email')
         .exec(
-            (err, usuarios) => {
+            (err, estaciones) => {
 
                 if (err) {
                     return res.status(500).json({
                         ok: false,
-                        mensaje: 'Error cargando usuarios',
+                        mensaje: 'Error cargando estaciones',
                         errors: err
                     });
                 }
 
-                Usuario.count({}, (err, conteo) => {
+                Estacion.count({}, (err, conteo) => {
                     res.status(200).json({
                         ok: true,
-                        usuarios: usuarios,
+                        estaciones: estaciones,
                         total: conteo
                     });
 
+
                 });
-
-
             });
 });
 
 
 
 //===========================================================
-//Actualizar un usuario
+//Actualizar un Estacion
 //===========================================================
 app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id;
     var body = req.body;
 
-    Usuario.findById(id, (err, usuario) => {
+    Estacion.findById(id, (err, estacion) => {
 
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al buscar al usuario',
+                mensaje: 'Error al buscar al Estacion',
                 errors: err
             });
         }
 
-        if (!usuario) {
+        if (!estacion) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'No existe el usuario',
-                errors: { message: 'No existe usuario' }
+                mensaje: 'No existe la estacion',
+                errors: { message: 'No existe estacion' }
             });
         }
 
-        usuario.nombre = body.nombre;
-        usuario.email = body.email;
-        usuario.role = body.role;
+        estacion.nombre = body.nombre;
+        estacion.usuario = req.usuario._id;
 
-        usuario.save((err, usuarioGuardado) => {
+        estacion.save((err, estacionGuardado) => {
 
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    mensaje: 'Error al actualizar al usuario',
+                    mensaje: 'Error al actualizar la Estacion',
                     errors: err
                 });
             }
             res.status(201).json({
                 ok: true,
-                usuario: usuarioGuardado
+                estacion: estacionGuardado
             });
         })
     });
 })
 
 //===========================================================
-//Crear un usuario
+//Crear una estacion
 //===========================================================
-app.post('/', /* mdAutenticacion.verificaToken, */ (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
 
     var body = req.body;
 
-    var usuario = new Usuario({
+    var estacion = new Estacion({
         nombre: body.nombre,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        img: body.img,
-        role: body.role
+        usuario: req.usuario._id
     });
 
-    usuario.save((err, usuarioGuardado) => {
+    estacion.save((err, estacionGuardado) => {
 
         if (err) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Error al crear usuario',
+                mensaje: 'Error al crear Estacion',
                 errors: err
             });
         }
 
         res.status(200).json({
             ok: true,
-            usuario: usuarioGuardado,
-            usuarioToken: req.usuario
+            estacion: estacionGuardado,
+            estacionToken: req.estacion
         });
 
     });
@@ -122,32 +118,32 @@ app.post('/', /* mdAutenticacion.verificaToken, */ (req, res) => {
 });
 
 //===========================================================
-//Eliminar un usuario
+//Eliminar una estacion
 //===========================================================
 app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
 
     var id = req.params.id;
 
-    Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
+    Estacion.findByIdAndRemove(id, (err, estacionBorrado) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'Error al borrar usuario',
+                mensaje: 'Error al borrar Estacion',
                 errors: err
             });
         }
 
-        if (!usuarioBorrado) {
+        if (!estacionBorrado) {
             return res.status(500).json({
                 ok: false,
-                mensaje: 'No existe un usuario con ese id',
+                mensaje: 'No existe una Estacion con ese id',
                 errors: err
             });
         }
 
         res.status(200).json({
             ok: true,
-            usuario: usuarioBorrado
+            estacion: estacionBorrado
         });
 
     });
