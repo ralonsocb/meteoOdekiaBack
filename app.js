@@ -26,6 +26,7 @@ var appRoutes = require('./routes/app');
 var usuarioRoutes = require('./routes/usuario');
 var loginRoutes = require('./routes/login');
 var estacionRoutes = require('./routes/estacion');
+var busquedaRoutes = require('./routes/busqueda');
 
 
 
@@ -38,6 +39,7 @@ mongoose.connection.openUri('mongodb://localhost:27017/weatherDB', (err, res) =>
 });
 
 //Rutas
+app.use('/busqueda', busquedaRoutes);
 app.use('/estacion', estacionRoutes);
 app.use('/usuario', usuarioRoutes);
 app.use('/login', loginRoutes);

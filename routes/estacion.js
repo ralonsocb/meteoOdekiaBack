@@ -38,6 +38,37 @@ app.get('/', (req, res, next) => {
 });
 
 
+//===========================================================
+//Obtener una Estacion
+//===========================================================
+app.get('/:id', (req, res) => {
+
+    var id = req.params.id;
+    Estacion.findById(id)
+        .exec((err, estacion) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error al buscar al Estacion',
+                    errors: err
+                });
+            }
+
+            if (!estacion) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: 'No existe la estacion',
+                    errors: { message: 'No existe estacion' }
+                });
+            }
+
+            res.status(200).json({
+                ok: true,
+                estacion: estacion
+            });
+
+        });
+});
 
 //===========================================================
 //Actualizar un Estacion
